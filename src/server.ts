@@ -1,4 +1,6 @@
 import express from 'express';
+import { Request, Response } from 'express';
+import fs from "fs";
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
@@ -28,6 +30,37 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
+  app.get( "/filteredimage", async ( req: Request, res: Response ) => {
+    const image_url = req.query.image_url;
+
+    if (!image_url) {
+      return res.status(400).send({ message: 'image_url query parameter is required.' });
+    }
+
+    if (!validateImageExtension(image_url)) {
+      return res.status(400).send({ message: `${image_url} is not a valid image.` });
+    }
+
+    const filtered_image = await filterImageFromURL(image_url);
+
+    res.sendFile(filtered_image);
+    
+    fs.readdir('./src/util/tmp/', (err, files) => {
+      const fullpath_files = files.map(file => './src/util/tmp/' + file);
+      if (fullpath_files.length > 0) {
+        deleteLocalFiles(fullpath_files);
+      }
+    });
+
+  } );
+
+  function validateImageExtension(image_url: string): boolean {
+    const valid_extensions = ['jpg', 'jpeg', 'png', 'svg', 'webp', 'gif'];
+
+    const image_extension = image_url.split('.')[(image_url.split('.')).length - 1];
+
+    return valid_extensions.includes(image_extension);
+  }
 
   //! END @TODO1
   

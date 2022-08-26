@@ -45,8 +45,10 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
     res.sendFile(filtered_image);
     
-    fs.readdir('./src/util/tmp/', (err, files) => {
-      const fullpath_files = files.map(file => './src/util/tmp/' + file);
+    const tmp_path = './util/tmp/';
+
+    fs.readdir(tmp_path, (err, files) => {
+      const fullpath_files = files.map(file => tmp_path + file);
       if (fullpath_files.length > 0) {
         deleteLocalFiles(fullpath_files);
       }
